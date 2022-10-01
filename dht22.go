@@ -17,9 +17,9 @@ const (
 )
 
 var (
-	ChecksumError    = errors.New("checksum error")
-	HumidityError    = errors.New("humidity range error")
-	TemperatureError = errors.New("temperature range error")
+	ErrChecksum    = errors.New("checksum error")
+	ErrHumidity    = errors.New("humidity range error")
+	ErrTemperature = errors.New("temperature range error")
 )
 
 type DHT22 struct {
@@ -28,6 +28,23 @@ type DHT22 struct {
 	humidity    float32
 	readAt      time.Time
 	err         error
+}
+
+type SensorData struct {
+	Humidity    float32
+	Temperature float32
+}
+
+func (d *DHT22) Read() (*SensorData, error) {
+	if err := d.read(); err != nil {
+		d.err = err
+		return nil, err
+	}
+
+	return &SensorData{
+		Humidity:    d.humidity,
+		Temperature: d.temperature,
+	}, nil
 }
 
 func New(pin string) *DHT22 {
@@ -48,7 +65,6 @@ func (d *DHT22) Humidity() (float32, error) {
 		d.err = err
 		return 0, err
 	}
-
 	return d.humidity, nil
 }
 
@@ -143,8 +159,8 @@ func (d *DHT22) read() error {
 	humidity <<= 8
 	humidity |= uint16(bytes[1])
 
-	if humidity < 0 || humidity > 1000 {
-		return HumidityError
+	if humidity > 1000 {
+		return ErrHumidity
 	}
 
 	d.humidity = float32(humidity) / 10
@@ -163,7 +179,7 @@ func (d *DHT22) read() error {
 
 	// datasheet operating range
 	if d.temperature < -40 || d.temperature > 80 {
-		return TemperatureError
+		return ErrTemperature
 	}
 
 	return nil
@@ -177,7 +193,7 @@ func (d *DHT22) checksum(bytes []uint8) error {
 	}
 
 	if sum != bytes[4] {
-		return ChecksumError
+		return ErrChecksum
 	}
 
 	return nil

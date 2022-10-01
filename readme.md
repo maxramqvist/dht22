@@ -1,23 +1,32 @@
 Greetings do it yourselfers!
 
 It's AM2302/DHT22 library. No external c libraries. 
+Forked from: github.com/morus12/dht22
 
 ## installation 
-`go get github.com/morus12/dht22`
+`go get github.com/maxramqvist/dht22`
 
 ## usage
 ```
-import "github.com/morus12/dht22"
+package main
 
-sensor := dht22.New("GPIO_17")
-temperature, err := sensor.Temperature()
-humidity, err := sensor.Humidity()
+import "github.com/maxramqvist/dht22"
+
+func main () {
+
+    sensor := dht22.New("GPIO_4")
+    
+    data, err := sensor.Read()
+    if err != nil {
+        return err
+    }
+    
+    fmt.Printf("Temperature is %f C and humidity %f %." data.Temperature, data.Humidity)
+}
 ```
 
 ## testing environmnet 
-- Raspberry Pi 3
-- two DHT22 sensors
-- go1.7.5 linux/arm
-- Raspbian GNU/Linux 8
-
-Pi3 has 64 bit CPU, but system was setup on 32bit. Currently (Feb 2016) there is no official linux/arm64 kernel for Pi 3.
+- Raspberry Pi Zero WH
+- One DHT22 sensor
+- go1.19.5 linux/arm
+- Raspberry Pi OS (32-bit), 2022-09-30
